@@ -1,7 +1,7 @@
 import torch
 from matplotlib import pyplot
 import torchvision
-from models.style_verbose import G_synthesis
+from models.style_verbose import G_synthesis,G_mapping
 
 g_all = nn.Sequential(OrderedDict([
     ('g_mapping', G_mapping()),
