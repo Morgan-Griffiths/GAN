@@ -19,7 +19,7 @@ def check_paths():
 def main():
     check_paths()
     # Load data
-    cifar10_path = '/Users/morgan/Code/Data/cifar-10-batches-py'
+    cifar10_path = '/home/shuza/Documents/Data/cifar-10-batches-py'
     train_data,test_data = return_cifar10(cifar10_path)
     train_x,train_labels = train_data
     test_x,test_labels = test_data
@@ -28,7 +28,7 @@ def main():
         'base_dir': os.getcwd(),
         'image_dir' : os.path.join(os.getcwd(),'generated_images'),
         'weight_dir' : os.path.join(os.getcwd(),'model_weights'),
-        'iterations':200,
+        'iterations':1000,
         'batch_size':1,
         'latent_dim':512,
         'alpha': 0,

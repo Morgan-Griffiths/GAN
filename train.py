@@ -29,7 +29,10 @@ def set_grad_flag(module, flag):
         p.requires_grad = flag
 
 def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
-    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
+    print(f'Training on {device}')
+    generator.to(device)
+    discriminator.to(device)
     d_optim        = optim.Adam(discriminator.parameters(), lr=0.001, betas=(0.0, 0.99))
     g_optim        = optim.Adam(generator.parameters(),lr=0.001, betas=(0.0, 0.99))
     base_dir,image_dir,weight_dir,iterations,batch_size,latent_dim,alpha,resolution = params.values()
@@ -38,7 +41,7 @@ def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
     for step in range(0,iterations+1):
         progress_bar.update(1)
         stop=start + batch_size
-        real_images = torch.tensor(datasets['x_train'][start:stop]).float()
+        real_images = torch.tensor(datasets['x_train'][start:stop]).float().to(device)
         # Train discriminator first
         discriminator.zero_grad()
         set_grad_flag(discriminator, True)
