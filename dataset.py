@@ -79,10 +79,10 @@ def return_selected_class(train_x,test_x,train_labels,test_labels,select=6):
     test_l = test_labels[test_labels == 6]
     return (train,train_l),(test,test_l)
     
-def return_cifar10():
-    print(f'Loading cifar10')
-    train_path = '/Users/morgan/Code/Data/cifar-10-batches-py/data_batch_'
-    test_path = '/Users/morgan/Code/Data/cifar-10-batches-py/test_batch'
+def return_cifar10(path):
+    print(f'Loading cifar10 path {path}')
+    train_path = os.path.join(path,'data_batch_')
+    test_path = os.path.join(path,'test_batch')
     train_inputs,train_labels = stack_cifar10(train_path)
     test_data = unpickle(test_path)
     test_inputs = test_data[b'data']

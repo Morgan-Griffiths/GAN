@@ -5,13 +5,13 @@ import os
 from PIL import Image
 from torch import optim
 
-def imsave(tensor, i):
+def imsave(path,tensor, i):
     grid = tensor[0]
     grid.clamp_(-1, 1).add_(1).div_(2)
     # Add 0.5 after normalizing to [0, 255] to round to nearest integer
     ndarr = grid.mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to('cpu', torch.uint8).numpy()
     img = Image.fromarray(ndarr)
-    img.save(f'/Users/morgan/Code/GAN/generated_images/generated_frog_{i}.png')
+    img.save(f'{path}/generated_frog_{i}.png')
 
 def load_weights(path,policy):
     policy.load_state_dict(torch.load(path))
@@ -32,7 +32,7 @@ def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     d_optim        = optim.Adam(discriminator.parameters(), lr=0.001, betas=(0.0, 0.99))
     g_optim        = optim.Adam(generator.parameters(),lr=0.001, betas=(0.0, 0.99))
-    save_dir,iterations,batch_size,latent_dim,alpha,resolution = params.values()
+    base_dir,image_dir,weight_dir,iterations,batch_size,latent_dim,alpha,resolution = params.values()
     start=0
     progress_bar = tqdm(total=iterations, initial=start)
     for step in range(0,iterations+1):
@@ -91,14 +91,9 @@ def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
         g_optim.step()
         
         if step % 100 == 0:
-            save_weights(f'/Users/morgan/Code/GAN/model_weights/generator_{step}.ckpt',generator)
-            save_weights(f'/Users/morgan/Code/GAN/model_weights/discriminator_{step}.ckpt',discriminator)
-            # print(f'discriminator loss: {d_losses}')
-            # print(f'generator loss: {g_losses}')
-            imsave(fake_image.data.cpu(), step)
-            # img = image.array_to_img(fake_image * 255., scale=False)
-            # print(fake_image.size(),fake_image.detach().numpy()[0,:,:,:].reshape(32,32,3).shape)
-            # plt.imsave(os.path.join(save_dir,'generated_frog' + str(step) + '.png'),fake_image.detach().numpy()[0,:,:,:].reshape(32,32,3))
+            save_weights(f'{weight_dir}/generator_{step}.ckpt',generator)
+            save_weights(f'{weight_dir}/discriminator_{step}.ckpt',discriminator)
+            imsave(image_dir,fake_image.data.cpu(), step)
         del fake_predict, fake_image, latent_w2
         progress_bar.set_description((f'Resolution: {resolution}*{resolution}  D_Loss: {d_losses[-1]:.4f}  G_Loss: {g_losses[-1]:.4f}  Alpha: {alpha:.4f}'))
         start += 1
