@@ -35,10 +35,10 @@ def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
     discriminator.to(device)
     d_optim        = optim.Adam(discriminator.parameters(), lr=0.001, betas=(0.0, 0.99))
     g_optim        = optim.Adam(generator.parameters(),lr=0.001, betas=(0.0, 0.99))
-    base_dir,image_dir,weight_dir,iterations,batch_size,latent_dim,alpha,resolution = params.values()
+    base_dir,image_dir,weight_dir,iterations,batch_size,latent_dim,alpha,resolution,step = params.values()
     start=0
     progress_bar = tqdm(total=iterations, initial=start)
-    for step in range(0,iterations+1):
+    for i in range(0,iterations+1):
         progress_bar.update(1)
         stop=start + batch_size
         real_images = torch.tensor(datasets['x_train'][start:stop]).float().to(device)
@@ -48,7 +48,7 @@ def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
         set_grad_flag(generator, False)
         real_images.requires_grad = True
         # print('real_images',real_images.size())
-        real_predict = discriminator(real_images, 0, alpha)
+        real_predict = discriminator(real_images, step, alpha)
         real_predict = nn.functional.softplus(-real_predict).mean()
         real_predict.backward(retain_graph=True)
         
@@ -62,19 +62,19 @@ def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
         # print('latent_w1',latent_w1[0].size())
         noise_1 = []
         noise_2 = []
-        for m in range(0 + 1):
+        for m in range(step + 1):
             size = 4 * 2 ** m # Due to the upsampling, size of noise will grow
             noise_1.append(torch.randn((resolution, 1, size, size), device=device))
             noise_2.append(torch.randn((resolution, 1, size, size), device=device))
         
-        fake_image = generator(latent_w1[0])#, step, alpha, noise_1)
+        fake_image = generator(latent_w1, step, alpha, noise_1)
         # print('fake_image',fake_image.size())
-        fake_predict = discriminator(fake_image, 0, alpha)
+        fake_predict = discriminator(fake_image, step, alpha)
         fake_predict = nn.functional.softplus(fake_predict).mean()
         fake_predict.backward()
         
-        if step % 20 == 0:
-            d_losses.append((real_predict + fake_predict).item())
+        # if step % 20 == 0:
+        d_losses.append((real_predict + fake_predict).item())
             
         d_optim.step()
         # Avoid possible memory leak
@@ -82,21 +82,21 @@ def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
         generator.zero_grad()
         set_grad_flag(discriminator, False)
         set_grad_flag(generator, True)
-        fake_image = generator(latent_w2[0])#, step, alpha, noise_2)
+        fake_image = generator(latent_w2, step, alpha, noise_2)
         # print('fake_image 2',fake_image.size())
-        fake_predict = discriminator(fake_image, 0, alpha)
+        fake_predict = discriminator(fake_image, step, alpha)
         fake_predict = nn.functional.softplus(-fake_predict).mean()
         fake_predict.backward()
         
-        if step % 20 == 0:
-            g_losses.append(fake_predict.item())
+        # if step % 20 == 0:
+        g_losses.append(fake_predict.item())
         
         g_optim.step()
         
         if step % 100 == 0:
-            save_weights(f'{weight_dir}/generator_{step}.ckpt',generator)
-            save_weights(f'{weight_dir}/discriminator_{step}.ckpt',discriminator)
-            imsave(image_dir,fake_image.data.cpu(), step)
+            save_weights(f'{weight_dir}/generator_{i}.ckpt',generator)
+            save_weights(f'{weight_dir}/discriminator_{i}.ckpt',discriminator)
+            imsave(image_dir,fake_image.data.cpu(), i)
         del fake_predict, fake_image, latent_w2
         progress_bar.set_description((f'Resolution: {resolution}*{resolution}  D_Loss: {d_losses[-1]:.4f}  G_Loss: {g_losses[-1]:.4f}  Alpha: {alpha:.4f}'))
         start += 1

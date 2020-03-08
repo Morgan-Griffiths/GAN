@@ -32,7 +32,8 @@ def main():
         'batch_size':1,
         'latent_dim':512,
         'alpha': 0,
-        'resolution':32
+        'resolution':32,
+        'step' : 3
     }
     datasets = {
         'x_train':train_x.transpose(0,3,2,1),
@@ -40,12 +41,17 @@ def main():
         'train_labels':train_labels,
         'test_labels':test_labels
     }
-    generator = nn.Sequential(OrderedDict([
-        ('g_mapping', G_mapping()),
-        #('truncation', Truncation(avg_latent)),
-        ('g_synthesis', G_synthesis())    
-    ]))
-    # generator = StyleBased_Generator()
+    # generator = nn.Sequential(OrderedDict([
+    #     ('g_mapping', G_mapping()),
+    #     #('truncation', Truncation(avg_latent)),
+    #     ('g_synthesis', G_synthesis())    
+    # ]))
+    # Model params
+    n_fc = 8
+    dim_latent = 512
+    dim_input = 4
+
+    generator = StyleBased_Generator(n_fc,dim_latent,dim_input)
     discriminator = Discriminator()
     train(params,datasets,generator,discriminator)
 

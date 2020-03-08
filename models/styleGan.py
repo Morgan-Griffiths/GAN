@@ -494,7 +494,7 @@ class Discriminator(nn.Module):
             ConvBlock(512, 512, 3, 1),
             ConvBlock(513, 512, 3, 1, 4, 0)
         ])
-        self.fc = SLinear(430592, 1)
+        self.fc = SLinear(512, 1)
         
         self.n_layer = 9 # 9 layers network
     
@@ -517,7 +517,7 @@ class Discriminator(nn.Module):
                 # Out dim: [channel(512), 4, 4]
                 res_std = torch.sqrt(res_var)
                 # Out dim: [channel(512), 4, 4] 
-                mean_std = res_std.mean().expand(result.size(0), 1, 32, 32)
+                mean_std = res_std.mean().expand(result.size(0), 1, 4, 4)
                 # Out dim: [1] -> [batch, 1, 4, 4]
                 # print('desc forward',result.shape,mean_std.shape)
                 result = torch.cat([result, mean_std], 1)
