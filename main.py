@@ -45,6 +45,7 @@ def main():
         #('truncation', Truncation(avg_latent)),
         ('g_synthesis', G_synthesis())    
     ]))
+    # generator = StyleBased_Generator()
     discriminator = Discriminator()
     train(params,datasets,generator,discriminator)
 
