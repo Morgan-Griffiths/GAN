@@ -93,7 +93,7 @@ def train(params, datasets, generator, discriminator, d_losses =[],g_losses=[]):
         
         g_optim.step()
         
-        if step % 100 == 0:
+        if i % 100 == 0:
             save_weights(f'{weight_dir}/generator_{i}.ckpt',generator)
             save_weights(f'{weight_dir}/discriminator_{i}.ckpt',discriminator)
             imsave(image_dir,fake_image.data.cpu(), i)
